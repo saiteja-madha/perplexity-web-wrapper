@@ -4,4 +4,9 @@ version = "0.1.0"
 description = "Unofficial wrapper for Perplexity AI's web interface."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115.12",
+    "perplexity-api>=1.0.5",
+    "uvicorn>=0.34.3",
+    "websocket-client>=1.8.0",
+]
