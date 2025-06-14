@@ -1,0 +1,7 @@
+[project]
+name = "perplexity-web-api"
+version = "0.1.0"
+description = "Unofficial wrapper for Perplexity AI's web interface."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
