@@ -129,32 +129,20 @@ wheels = [
 ]
 
 [[package]]
-name = "perplexity-api"
-version = "1.0.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "curl-cffi" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d8/91/1dfdf45c5b7d8bb09e045102598711e77e99c93777264976eb8c158d45e4/perplexity_api-1.0.5.tar.gz", hash = "sha256:1e2d3ea88d8c35fad09224b0cf44edd99f7ee62eee96f592fc636baa0d1fb520", size = 7397 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/27/a2/a5fc7ad326d9a4173e2c3612bbb442ae7b3b988a1f39fb5e5a1d8d670c56/perplexity_api-1.0.5-py3-none-any.whl", hash = "sha256:5e73ee485901d9f65295c43d7972ffe47a0369df7925047037d6fa1cf3965423", size = 9386 },
-]
-
-[[package]]
-name = "perplexity-web-api"
+name = "perplexity-web-wrapper"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "curl-cffi" },
     { name = "fastapi" },
-    { name = "perplexity-api" },
     { name = "uvicorn" },
     { name = "websocket-client" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "curl-cffi", specifier = ">=0.11.3" },
     { name = "fastapi", specifier = ">=0.115.12" },
-    { name = "perplexity-api", specifier = ">=1.0.5" },
     { name = "uvicorn", specifier = ">=0.34.3" },
     { name = "websocket-client", specifier = ">=1.8.0" },
 ]

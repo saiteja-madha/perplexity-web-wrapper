@@ -1,11 +1,12 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 
 
 import asyncio
 import json
-import perplexity
+from lib import perplexity
+# import perplexity
 from typing import List, Optional
 from datetime import datetime
 
@@ -192,7 +193,13 @@ async def followup(
     )
 
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True)
+@app.get("/api/threads")
+def get_threads(limit: int = 20, offset: int = 0, search_term: str = ""):
+    """Fetch a list of threads from Perplexity AI."""
+    try:
+        threads = perplexity_cli.get_threads(
+            limit=limit, offset=offset, search_term=search_term
+        )
+        return JSONResponse(content=threads)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
