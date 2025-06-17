@@ -149,3 +149,13 @@ def get_threads(limit: int = 20, offset: int = 0, search_term: str = ""):
         return JSONResponse(content=threads)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+@app.get("/api/threads/{slug}")
+def get_thread(slug: str):
+    """Fetch a specific thread by slug."""
+    try:
+        thread = perplexity_cli.get_thread_details_by_slug(slug)
+        return JSONResponse(content=thread)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
