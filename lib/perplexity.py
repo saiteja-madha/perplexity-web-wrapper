@@ -217,7 +217,8 @@ class Client:
                     content_json = json.loads(
                         content[len("event: message\r\ndata: ") :]
                     )
-                    content_json["text"] = json.loads(content_json["text"])
+                    if "text" in content_json:
+                        content_json["text"] = json.loads(content_json["text"])
 
                     chunks.append(content_json)
                     yield chunks[-1]
@@ -233,7 +234,8 @@ class Client:
 
             if content.startswith("event: message\r\n"):
                 content_json = json.loads(content[len("event: message\r\ndata: ") :])
-                content_json["text"] = json.loads(content_json["text"])
+                if "text" in content_json:
+                    content_json["text"] = json.loads(content_json["text"])
 
                 chunks.append(content_json)
 
@@ -274,12 +276,24 @@ class Client:
             "offset": 0,
             "from_first": "true",
             "supported_block_use_cases": [
-                "answer_modes", "media_items", "knowledge_cards", "inline_entity_cards",
-                "place_widgets", "finance_widgets", "sports_widgets", "shopping_widgets",
-                "jobs_widgets", "search_result_widgets", "clarification_responses",
-                "inline_images", "inline_assets", "inline_finance_widgets", "placeholder_cards",
-                "diff_blocks", "inline_knowledge_cards"
-            ]
+                "answer_modes",
+                "media_items",
+                "knowledge_cards",
+                "inline_entity_cards",
+                "place_widgets",
+                "finance_widgets",
+                "sports_widgets",
+                "shopping_widgets",
+                "jobs_widgets",
+                "search_result_widgets",
+                "clarification_responses",
+                "inline_images",
+                "inline_assets",
+                "inline_finance_widgets",
+                "placeholder_cards",
+                "diff_blocks",
+                "inline_knowledge_cards",
+            ],
         }
         # Merge user params
         params = dict(default_params)
