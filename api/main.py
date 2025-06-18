@@ -20,7 +20,7 @@ except (FileNotFoundError, json.JSONDecodeError):
 
 perplexity_cli = perplexity.Client(perplexity_cookies)
 app = FastAPI(
-    title="Perplexity AI API", description="Stream Perplexity AI responses using SSE"
+    title="Perplexity Web API", description="Stream Perplexity AI responses using SSE"
 )
 
 # Configure CORS
@@ -44,7 +44,6 @@ async def generate_sse_stream(
     incognito: bool,
 ):
     """Generate SSE stream from Perplexity responses."""
-    previous_content = ""
     response_count = 0
 
     # Start the streaming search in a sync function
@@ -61,30 +60,21 @@ async def generate_sse_stream(
             incognito=incognito,
         ):
             response_count += 1
-            save_resp(
-                stream,
-                f"API-{datetime.now().strftime('%Y%m%d%H%M%S')}-{response_count}",
+            file_name = (
+                f"API-{datetime.now().strftime('%Y%m%d%H%M%S')}-{response_count}"
             )
-
+            save_resp(stream, file_name)
             if answer_only:
-                ans_data = extract_answer(stream)
-                ans_string = ans_data.get("answer", "")
-                backend_uuid = ans_data.get("backend_uuid", None)
-                if ans_string:
-                    if len(ans_string) > len(previous_content):  # send only new content
-                        new_content = ans_string[len(previous_content) :]
-                        event_data = json.dumps(
-                            {
-                                "type": "content",
-                                "content": {
-                                    "answer": new_content,
-                                    "backend_uuid": backend_uuid,
-                                },
-                                "done": False,
-                            }
-                        )
-                        yield f"data: {event_data}\n\n"
-                        previous_content = ans_string
+                ans_data = extract_answer(stream, file_name)
+                if "answer" in ans_data and ans_data["answer"] is not None:
+                    event_data = json.dumps(
+                        {
+                            "type": "content",
+                            "content": ans_data,
+                            "done": False,
+                        }
+                    )
+                    yield f"data: {event_data}\n\n"
 
             # If not answer_only, send the full stream content
             else:
@@ -102,8 +92,8 @@ async def generate_sse_stream(
         yield f"data: {error_data}\n\n"
 
 
-@app.get("/api/query")
-async def query(
+@app.get("/api/query_async")
+async def query_async(
     q: str = Query(..., description="Query string to search"),
     backend_uuid: str = Query(
         None, description="UUID of the previous response", alias="backend_uuid"
@@ -137,6 +127,50 @@ async def query(
         ),
         media_type="text/event-stream",
     )
+
+
+@app.get("/api/query_sync")
+def query_sync(
+    q: str = Query(..., description="Query string to search"),
+    backend_uuid: str = Query(
+        None, description="UUID of the previous response", alias="backend_uuid"
+    ),
+    answer_only: bool = Query(False, description="Return only the answer text"),
+    mode: str = Query(
+        "auto",
+        description="Search mode",
+        enum=["auto", "writing", "coding", "research"],
+    ),
+    model: Optional[str] = Query(None, description="Model to use"),
+    sources: str = Query("web", description="Sources (comma-separated)"),
+    language: str = Query("en-US", description="Language"),
+    incognito: bool = Query(False, description="Use incognito mode"),
+):
+    """Query Perplexity AI and return the full response as JSON (no streaming)."""
+    sources_list = [s.strip() for s in sources.split(",")]
+    follow_up = (
+        {"backend_uuid": backend_uuid, "attachments": []} if backend_uuid else None
+    )
+    try:
+        result = perplexity_cli.search(
+            q,
+            mode=mode,
+            model=model,
+            sources=sources_list,
+            files={},
+            stream=False,
+            language=language,
+            follow_up=follow_up,
+            incognito=incognito,
+        )
+        file_name = f"API-{datetime.now().strftime('%Y%m%d%H%M%S')}-sync"
+        save_resp(result, file_name)
+        if answer_only:
+            ans_data = extract_answer(result, file_name)
+            return JSONResponse(content=ans_data)
+        return JSONResponse(content=result)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 @app.get("/api/threads")
